@@ -42,7 +42,7 @@
 
 ## Comands to monitor Configuration Installation
 	
-	- Example for Nginx server, web 
+	- Example for App server, app-02
 		vagrant ssh app-02
 		tail -f /var/log/cloud-init*   ( as vagrant user )
 
