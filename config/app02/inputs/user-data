@@ -1,7 +1,7 @@
-Content-Type: multipart/mixed; boundary="===============2168174773377995558=="
+Content-Type: multipart/mixed; boundary="===============6328870440133078345=="
 MIME-Version: 1.0
 
---===============2168174773377995558==
+--===============6328870440133078345==
 Content-Type: text/x-shellscript; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -40,7 +40,7 @@ fi
 echo "Configuring required services : Completed " | tee -a  /tmp/sainsburys.log
 
 
---===============2168174773377995558==
+--===============6328870440133078345==
 Content-Type: text/cloud-config; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -52,12 +52,12 @@ final_message: "The system is finally up, after $UPTIME seconds"
 runcmd: 
   - "curl -L https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 -o /usr/bin/confd"
   - "curl -L https://github.com/coreos/etcd/releases/download/v2.0.9/etcd-v2.0.9-linux-amd64.tar.gz -o /usr/local/etcd-v2.0.9-linux-amd64.tar.gz"
+  - "curl -L https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz -o /usr/src/goland.tar.gz"
+  - "tar xvzf /usr/src/goland.tar.gz -C /usr/local"
   - "tar xvzf /usr/local/etcd-v2.0.9-linux-amd64.tar.gz -C /usr/local/"
   - "ln -s /usr/local/etcd-v2.0.9-linux-amd64/etcdctl /usr/bin/etcdctl"
   - "ln -s /usr/local/etcd-v2.0.9-linux-amd64/etcd /usr/bin/etcd"
   - "ln -s /usr/local/go/bin/go /usr/bin/go"
-  - "wget https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz -O /usr/src/goland.tar.gz"
-  - "tar xvzf /usr/src/goland.tar.gz -C /usr/local"
 users: 
   - 
     name: sainsburry
@@ -200,4 +200,4 @@ write_files:
         WantedBy=multi-user.target
     path: /lib/systemd/system/sidekick.service
 
---===============2168174773377995558==--
+--===============6328870440133078345==--
