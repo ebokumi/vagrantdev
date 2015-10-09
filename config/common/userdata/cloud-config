@@ -1,0 +1,153 @@
+#cloud-config
+
+final_message: "The system is finally up, after $UPTIME seconds"
+runcmd: 
+  - "curl -L https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 -o /usr/bin/confd"
+  - "curl -L https://github.com/coreos/etcd/releases/download/v2.0.9/etcd-v2.0.9-linux-amd64.tar.gz -o /usr/local/etcd-v2.0.9-linux-amd64.tar.gz"
+  - "tar xvzf /usr/local/etcd-v2.0.9-linux-amd64.tar.gz -C /usr/local/"
+  - "ln -s /usr/local/etcd-v2.0.9-linux-amd64/etcdctl /usr/bin/etcdctl"
+  - "ln -s /usr/local/etcd-v2.0.9-linux-amd64/etcd /usr/bin/etcd"
+  - "ln -s /usr/local/go/bin/go /usr/bin/go"
+  - "wget https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz -O /usr/src/goland.tar.gz"
+  - "tar xvzf /usr/src/goland.tar.gz -C /usr/local"
+users: 
+  - 
+    name: sainsburry
+    shell: /bin/bash
+    ssh-authorized-keys: 
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDgodqv6uAMpTmy+lr+3HYXqzqFbzMVkjpEdvU1amNsdb1II4Q4RV/VP1U1kIaFXg8bc/2ppgRm8jTij+LsZz8jTQ9+PDa4gO7py/FVs5OznBCQIv3LnruFzrPvFrKzLGiuQoHMg7HlH3/9Dnf96JYPHkQvp2MR/Nq6df5Uh6eaXusf9NSE8wLm50a8DgDtNZazO7t0Q+dc5/6WKn2Z9fOazYi710JwiZ8kRDYzqr3bZ9O/9hDbuH1b4hMzlmlbqgQCuuHy0mH0JZ+K5LeizD7MsjiI4HuBYNpGK3peGkvFfPJXN7TsVhpbHWpRKPbgrMrp9niFUiTee4sfXN2UmEN5 mahny@Emmanuels-iMac.home"
+packages: 
+  - nginx
+write_files: 
+  - 
+    content: |
+        127.0.0.1 localhost
+        172.17.8.101 webserver01
+        172.17.8.111 appserver01 
+        172.17.8.112 appserver02 
+    path: etc/hosts
+  - 
+    content: |
+            user www-data;
+            worker_processes 4;
+            pid /run/nginx.pid;
+            events {
+              worker_connections 768;                                                
+            }
+            http {
+              upstream  sainsburry {                                                 
+                server localhost;
+            }
+            include /etc/nginx/conf.d/*.conf;
+            include /etc/nginx/sites-enabled/*;
+            }
+    path: /etc/nginx/nginx.conf
+  - 
+    content: |
+            server {
+                    listen 80;
+                    root html;
+            }
+    path: /etc/nginx/sites-enabled/default
+  - 
+    content: |
+            [template]
+            src = "nginx.conf.tmpl"
+            dest = "/etc/nginx/nginx.conf"
+            keys = [
+            "/backends",
+            "/domain"
+            ]
+            check_cmd = "/usr/sbin/nginx -t -c {{.src}}"
+            reload_cmd = "systemctl reload nginx"
+    path: /etc/confd/conf.d/nginx.conf.toml
+  - 
+    content: |
+            [template]
+            src = "default.tmpl"
+            dest = "/etc/nginx/sites-enabled/default"
+            keys = [
+            "/backends",
+            "/domain"
+            ]
+            reload_cmd = "systemctl reload nginx"
+    path: /etc/confd/conf.d/default.toml
+  - 
+    content: |
+        user www-data;
+        worker_processes 4;
+        pid /run/nginx.pid;
+        events {
+            worker_connections 768;                                                
+            }
+        http {
+            upstream {{getv "/domain"}} {
+                  {{range getvs "/backends/*"}}
+                    server {{.}};
+                  {{end}}
+            }
+            include /etc/nginx/conf.d/*.conf;
+            include /etc/nginx/sites-enabled/*;
+        }
+    path: /etc/confd/templates/nginx.conf.tmpl
+  - 
+    content: |
+            server {
+                    listen 80;
+                    location / {
+                         proxy_pass http://{{getv "/domain"}};
+                    }
+                    
+            }
+    path: /etc/confd/templates/default.tmpl
+  - 
+    content: |
+        [Unit]
+        Description=Etcd Server
+        Before=watchdog.service
+        
+        [Service]
+        Restart=always
+        ExecStart=-/usr/bin/etcd -name %H -initial-advertise-peer-urls http://%H:2380   -listen-peer-urls http://%H:2380   -listen-client-urls http://%H:2379,http://127.0.0.1:2379,http://127.0.0.1:4001   -advertise-client-urls http://%H:2379   -initial-cluster-token etcd-cluster-1   -initial-cluster appserver01=http://172.17.8.111:2380,appserver02=http://172.17.8.112:2380,webserver01=http://172.17.8.101:2380   -initial-cluster-state new --data-dir /var/lib/etcd
+        
+        [Install]
+        WantedBy=multi-user.target
+    path: /lib/systemd/system/etcd.service
+  - 
+    content: |
+        [Unit]
+        Description=WatchDog
+        
+        [Service]
+        Restart=always
+        ExecStart=-/bin/sh -c "while true;do /usr/bin/confd -onetime; if [ $? -eq 1 ]; then cp  /etc/nginx/sites-backup/default /etc/nginx/sites-enabled/default ; systemctl reload nginx ; fi ; sleep 5; done"
+        
+        [Install]
+        WantedBy=multi-user.target
+    path: /lib/systemd/system/watchdog.service
+  - 
+    content: |
+        [Unit]
+        Description=A Great Application for SainsBurrys
+        
+        [Service]
+        Restart=on-failure
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/sh -c 'REPO=https://github.com/ebokumi/baseapp.git ; rm -rf /app ; git clone $REPO /app ; chown -R sainsburry /app ; export GOPATH=/app ; go install main/app'
+        ExecStart=/bin/su - sainsburry -c '/app/bin/app'
+        
+        [Install]
+        WantedBy=multi-user.target
+    path: /lib/systemd/system/app.service
+  - 
+    content: |
+        [Unit]
+        Description=A Great Application for SainsBurrys SideKick
+        
+        [Service]
+        Restart=on-failure
+        TimeoutStartSec=0
+        ExecStart=/bin/sh -c 'while true; do  curl -f %H:8484  ; if [ $? -eq 0 ]; then /usr/bin/etcdctl  set /domain SainsBurry  --ttl 15 ; /usr/bin/etcdctl  set /backends/%H %H:8484 --ttl 15; else /usr/bin/etcdctl  rm /backends/%H ;  fi ; sleep 10;  done'
+        [Install]
+        WantedBy=multi-user.target
+    path: /lib/systemd/system/sidekick.service

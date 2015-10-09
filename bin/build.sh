@@ -1,0 +1,4 @@
+#!/bin/bash                                                                                                                                                                                                                                                                                                                                                           
+SERVERS="web app01 app02"
+
+for i in $SERVERS; do rm -rf config/$i/init.iso;  ./bin/write-mime-multipart -o config/$i/inputs/user-data config/common/userdata/script.sh config/common/userdata/cloud-config;  ./bin/hdiutil makehybrid -o config/$i/init.iso -hfs -joliet -iso -default-volume-name cidata config/$i/inputs/; done
