@@ -1,6 +1,6 @@
 ## SainsBurry's Screening Test
 
-# Vagrant Box Version : 
+# Box Version : 
 
     - ubuntu/vivid64 15.04  
 
@@ -19,7 +19,7 @@
 	- etcd : holds configuration data for nginx backends
 	- nginx : web server
 	- watchdog : monitor configuration updates from etcd and update nginx configuration files ( nginx.conf , sites-enable/default ), revert nginx config  default if there is no backend configured
-	- app :    build and start the app  ( repo :  https://github.com/ebokumi/baseapp )
+	- app :    download, build  and start the app  ( repo :  https://github.com/ebokumi/baseapp )
 	- sidekick :  monitor app activitty and register to etcd if the app is available ( unregister the app if otherwise )
 
 	See config/common/userdata/cloud-config for details 
