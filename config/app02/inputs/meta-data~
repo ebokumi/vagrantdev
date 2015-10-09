@@ -1,7 +1,0 @@
-instance-id: iid-000002
-local-hostname: appserver02
-etcd-server : 172.17.8.101:4001
-server-type : node
-app-name : webapp
-app-server-id : web02
-app-image-id : bsolomo/webapp:latest
