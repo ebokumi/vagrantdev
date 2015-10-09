@@ -1,20 +1,20 @@
-## My Dev Box
+# My Dev Box
 
-# Box Version : 
+## Box Version : 
 
     - ubuntu/vivid64 15.04  
 
-# Configuration Management : 
+## Configuration Management : 
 
     - cloud-init
 
-# Host Description :
+## Host Description :
 
     - Nginx server : web-01 ( ip : 172.17.8.101 , url : http://172.17.8.101 , services : [ nginx , watchdog, etcd ]  )
 
     - App servers : app-01 ( ip : 172.17.8.111 , url : http://172.17.8.111:8484 , services : [  app, sidekick, etcd] ) / app-02 ( ip : 172.17.8.112 , url : http://172.17.8.112:8484 , services : [  app, sidekick, etcd ] )
 
-#  Services Description :
+##  Services Description :
 
 	- etcd : holds configuration data for nginx backends
 	- nginx : web server
@@ -24,7 +24,7 @@
 
 	See config/common/userdata/cloud-config for details 
 
-#  Directory Tree :
+##  Directory Tree :
   
    - config/common/userdata/cloud-config  : this file is the first being applied 
    - config/common/userdata/script.sh     : this file is will be applied after cloud-config 
@@ -32,7 +32,7 @@
    - config/*/inputs/meta-data            : this file holds meta-data ( like hostname )
    - config/*/init.so                     : this file holds the configuration consumed by cloud-init  
 
-# Startup Instruction :
+## Startup Instruction :
 	
 	- vagrant up   (To start all boxes at once)
 	- wait 3 to 8 min ( Coffee ? )
@@ -40,13 +40,13 @@
 	- Browse http://172.17.8.111:8484 
 	- Browse http://172.17.8.112:8484 
 
-# Comands to monitor Configuration Installation :
+## Comands to monitor Configuration Installation :
 	
 	- Example for Nginx server, web 
 		vagrant ssh web-01
 		tail -f /var/log/cloud-init*   ( as vagrant user )
 
-# Test to trigger configuration update from Nginx server  :
+## Test to trigger configuration update from Nginx server  :
 
 	- Example to unregister a backend autmatically for App server 01, app01 
 		vagrant ssh app-01 
@@ -61,13 +61,13 @@
 
 	
 
-# Notes 
+## Notes 
 
 Service availability : 
   - All services are started with a restart flag on failure using Systemd
 
 
-# TroubleShoot 
+## TroubleShoot 
 
   Cloud-init requires an iso to be loaded into the cdrom this means that we need to control cdrom name ( in our current case it is for me SATAController )
 
