@@ -1,4 +1,4 @@
-#DevBox
+## SainsBurry's Screening Test
 
 # Vagrant Box Version : 
 
@@ -19,7 +19,7 @@
 	- etcd : holds configuration data for nginx backends
 	- nginx : web server
 	- watchdog : monitor configuration updates from etcd and update nginx configuration files ( nginx.conf , sites-enable/default ), revert nginx config  default if there is no backend configured
-	- app :  node app  
+	- app :    build and start the app  ( repo :  https://github.com/ebokumi/baseapp )
 	- sidekick :  monitor app activitty and register to etcd if the app is available ( unregister the app if otherwise )
 
 	See config/common/userdata/cloud-config for details 
@@ -35,12 +35,12 @@
 # Startup Instruction :
 	
 	- vagrant up   (To start all boxes at once)
-	- wait 3 to 7 min ( Coffee ? )
+	- wait 3 to 8 min ( Coffee ? )
 	- Browse http://172.17.8.101 
 	- Browse http://172.17.8.111:8484 
 	- Browse http://172.17.8.112:8484 
 
-# Comands Monitor Configuration Installation :
+# Comands to monitor Configuration Installation :
 	
 	- Example for Nginx server, web 
 		vagrant ssh web-01
